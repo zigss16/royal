@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Flip</title>
+<style>
+    body {
+        font-family: monospace, Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #c9e7f0; /* Light blue background color */
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background-color: #fff; /* White background color */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    }
+
+    h1 {
+        color: #333; /* Dark text color */
+    }
+
+    .balance-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .balance {
+        font-size: 24px;
+    }
+
+    .ranking {
+        font-size: 16px;
+    }
+
+    .result {
+        font-size: 20px;
+        margin-top: 20px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #4CAF50; /* Green */
+        color: white; /* White text color */
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease; /* Smooth transition */
+    }
+
+    button:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Royal Flip Game</h1>
+    <div class="balance-container">
+        <div class="balance" id="balance">Balance: SOL 1</div>
+        <div class="ranking">Ranking: #1</div>
+    </div>
+    <label for="bet">Bet (Heads or Tails):</label>
+    <input type="text" id="bet" placeholder="Enter bet">
+    <br>
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount" placeholder="Enter amount">
+    <br>
+    <button onclick="flipCoin()">Flip Coin</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    let balance = 1;
+
+    function flipCoin() {
+        let bet = document.getElementById("bet").value.toLowerCase();
+        let amount = parseFloat(document.getElementById("amount").value);
+
+        if (!validateInput(bet, amount)) {
+            return;
+        }
+
+        // Adjusting the winning chance to 30%
+        let winningChance = 0.3;
+        let result = Math.random() < winningChance ? "Heads" : "Tails";
+
+        updateBalance(bet, amount, result);
+        updateUI();
+
+        if (balance <= 0) {
+            disableGame();
+        }
+    }
+
+    function validateInput(bet, amount) {
+        if (bet !== "heads" && bet !== "tails") {
+            alert("Invalid bet. Please enter 'Heads' or 'Tails'.");
+            return false;
+        }
+
+        if (isNaN(amount) || amount <= 0 || amount > balance) {
+            alert("Invalid amount. Please enter a valid amount.");
+            return false;
+        }
+
+        return true;
+    }
+
+    function updateBalance(bet, amount, result) {
+        if (result.toLowerCase() === bet) {
+            balance += amount;
+        } else {
+            balance -= amount;
+        }
+    }
+
+    function updateUI() {
+        document.getElementById("balance").textContent = `Balance: SOL ${balance}`;
+        // Here you can update the ranking based on users' balances
+        document.getElementById("result").textContent = balance > 0 ? `You ${balance > 1 ? "gained" : "lost"} SOL ${Math.abs(amount)}.` : "Game over!";
+    }
+
+    function disableGame() {
+        document.getElementById("bet").disabled = true;
+        document.getElementById("amount").disabled = true;
+        document.querySelector("button").disabled = true;
+    }
+</script>
+
+</body>
+</html>
