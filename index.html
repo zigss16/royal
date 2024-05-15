@@ -17,10 +17,6 @@
     }
 
     .container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
         text-align: center;
         background-color: #fff; /* White background color */
         padding: 20px;
@@ -32,20 +28,9 @@
         color: #333; /* Dark text color */
     }
 
-    .balance-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-
     .balance {
         font-size: 24px;
-    }
-
-    .ranking {
-        font-size: 16px;
+        margin-bottom: 20px;
     }
 
     .result {
@@ -56,6 +41,7 @@
     button {
         padding: 10px 20px;
         font-size: 16px;
+        margin-top: 20px;
         cursor: pointer;
         background-color: #4CAF50; /* Green */
         color: white; /* White text color */
@@ -73,10 +59,8 @@
 
 <div class="container">
     <h1>Royal Flip Game</h1>
-    <div class="balance-container">
-        <div class="balance" id="balance">Balance: SOL 1</div>
-        <div class="ranking">Ranking: #1</div>
-    </div>
+    <div class="balance" id="balance">Balance: SOL <span id="sol-balance">1</span></div>
+    <button id="connect-wallet">Connect Wallet</button>
     <label for="bet">Bet (Heads or Tails):</label>
     <input type="text" id="bet" placeholder="Enter bet">
     <br>
@@ -87,63 +71,93 @@
     <div class="result" id="result"></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/solana-web3.js/1.31.0/solana-web3.min.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.7.6/lib/index.umd.min.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-base@0.7.6/lib/index.umd.min.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-react@0.7.6/lib/index.umd.min.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.7.6/lib/index.umd.min.js"></script>
 <script>
-    let balance = 1;
+    document.addEventListener("DOMContentLoaded", function() {
+        const { Connection, clusterApiUrl } = solanaWeb3;
+        const { PhantomWalletAdapter } = solanaWalletAdapterWallets;
 
-    function flipCoin() {
-        let bet = document.getElementById("bet").value.toLowerCase();
-        let amount = parseFloat(document.getElementById("amount").value);
+        let wallet;
 
-        if (!validateInput(bet, amount)) {
-            return;
+        const connectWalletButton = document.getElementById("connect-wallet");
+        const solBalanceElement = document.getElementById("sol-balance");
+
+        connectWalletButton.addEventListener("click", async () => {
+            const network = clusterApiUrl('mainnet-beta');
+            const connection = new Connection(network);
+            wallet = new PhantomWalletAdapter();
+
+            try {
+                await wallet.connect();
+                alert("Wallet connected: " + wallet.publicKey.toString());
+
+                const publicKey = wallet.publicKey;
+                const balance = await connection.getBalance(publicKey);
+                solBalanceElement.textContent = (balance / 1e9).toFixed(2); // Convert lamports to SOL
+            } catch (err) {
+                console.error("Error connecting to wallet:", err);
+                alert("Failed to connect wallet");
+            }
+        });
+
+        let balance = 1; // Example initial balance
+
+        function flipCoin() {
+            let bet = document.getElementById("bet").value.toLowerCase();
+            let amount = parseFloat(document.getElementById("amount").value);
+
+            if (!validateInput(bet, amount)) {
+                return;
+            }
+
+            let result = Math.random() < 0.5 ? "heads" : "tails";
+
+            updateBalance(bet, amount, result);
+            updateUI();
+
+            if (balance <= 0) {
+                disableGame();
+            }
         }
 
-        // Adjusting the winning chance to 30%
-        let winningChance = 0.3;
-        let result = Math.random() < winningChance ? "Heads" : "Tails";
+        function validateInput(bet, amount) {
+            if (bet !== "heads" && bet !== "tails") {
+                alert("Invalid bet. Please enter 'Heads' or 'Tails'.");
+                return false;
+            }
 
-        updateBalance(bet, amount, result);
-        updateUI();
+            if (isNaN(amount) || amount <= 0 || amount > balance) {
+                alert("Invalid amount. Please enter a valid amount.");
+                return false;
+            }
 
-        if (balance <= 0) {
-            disableGame();
-        }
-    }
-
-    function validateInput(bet, amount) {
-        if (bet !== "heads" && bet !== "tails") {
-            alert("Invalid bet. Please enter 'Heads' or 'Tails'.");
-            return false;
+            return true;
         }
 
-        if (isNaN(amount) || amount <= 0 || amount > balance) {
-            alert("Invalid amount. Please enter a valid amount.");
-            return false;
+        function updateBalance(bet, amount, result) {
+            if (result === bet) {
+                balance += amount;
+            } else {
+                balance -= amount;
+            }
         }
 
-        return true;
-    }
-
-    function updateBalance(bet, amount, result) {
-        if (result.toLowerCase() === bet) {
-            balance += amount;
-        } else {
-            balance -= amount;
+        function updateUI() {
+            document.getElementById("balance").textContent = `Balance: SOL ${balance}`;
+            document.getElementById("result").textContent = balance > 0 ? `You ${balance > 1 ?
+                "gained" : "lost"} SOL ${Math.abs(amount)}.` : "Game over!";
         }
-    }
 
-    function updateUI() {
-        document.getElementById("balance").textContent = `Balance: SOL ${balance}`;
-        // Here you can update the ranking based on users' balances
-        document.getElementById("result").textContent = balance > 0 ? `You ${balance > 1 ? "gained" : "lost"} SOL ${Math.abs(amount)}.` : "Game over!";
-    }
-
-    function disableGame() {
-        document.getElementById("bet").disabled = true;
-        document.getElementById("amount").disabled = true;
-        document.querySelector("button").disabled = true;
-    }
+        function disableGame() {
+            document.getElementById("bet").disabled = true;
+            document.getElementById("amount").disabled = true;
+            document.querySelector("button").disabled = true;
+        }
+    });
 </script>
-
 </body>
 </html>
