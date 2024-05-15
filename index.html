@@ -87,6 +87,8 @@
         const solBalanceElement = document.getElementById("sol-balance");
 
         connectWalletButton.addEventListener("click", async () => {
+            console.log("Connect wallet button clicked");
+
             const network = clusterApiUrl('mainnet-beta');
             const connection = new Connection(network);
             wallet = new PhantomWalletAdapter();
