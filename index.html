@@ -88,7 +88,7 @@
                 const network = clusterApiUrl('mainnet-beta');
                 const connection = new Connection(network);
                 wallet = new PhantomWalletAdapter();
-                
+
                 await wallet.connect();
 
                 alert("Wallet connected: " + wallet.publicKey.toString());
