@@ -73,12 +73,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/solana-web3.js/1.31.0/solana-web3.min.js"></script>
 <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.7.6/lib/index.umd.min.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-base@0.7.6/lib/index.umd.min.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-react@0.7.6/lib/index.umd.min.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.7.6/lib/index.umd.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const { Connection, clusterApiUrl } = solanaWeb3;
+    document.addEventListener("DOMContentLoaded", async () => {
+        const { clusterApiUrl, Connection } = solanaWeb3;
         const { PhantomWalletAdapter } = solanaWalletAdapterWallets;
 
         let wallet;
@@ -87,14 +84,13 @@
         const solBalanceElement = document.getElementById("sol-balance");
 
         connectWalletButton.addEventListener("click", async () => {
-            console.log("Connect wallet button clicked");
-
-            const network = clusterApiUrl('mainnet-beta');
-            const connection = new Connection(network);
-            wallet = new PhantomWalletAdapter();
-
             try {
+                const network = clusterApiUrl('mainnet-beta');
+                const connection = new Connection(network);
+                wallet = new PhantomWalletAdapter();
+                
                 await wallet.connect();
+
                 alert("Wallet connected: " + wallet.publicKey.toString());
 
                 const publicKey = wallet.publicKey;
@@ -105,60 +101,6 @@
                 alert("Failed to connect wallet");
             }
         });
-
-        let balance = 1; // Example initial balance
-
-        function flipCoin() {
-            let bet = document.getElementById("bet").value.toLowerCase();
-            let amount = parseFloat(document.getElementById("amount").value);
-
-            if (!validateInput(bet, amount)) {
-                return;
-            }
-
-            let result = Math.random() < 0.5 ? "heads" : "tails";
-
-            updateBalance(bet, amount, result);
-            updateUI();
-
-            if (balance <= 0) {
-                disableGame();
-            }
-        }
-
-        function validateInput(bet, amount) {
-            if (bet !== "heads" && bet !== "tails") {
-                alert("Invalid bet. Please enter 'Heads' or 'Tails'.");
-                return false;
-            }
-
-            if (isNaN(amount) || amount <= 0 || amount > balance) {
-                alert("Invalid amount. Please enter a valid amount.");
-                return false;
-            }
-
-            return true;
-        }
-
-        function updateBalance(bet, amount, result) {
-            if (result === bet) {
-                balance += amount;
-            } else {
-                balance -= amount;
-            }
-        }
-
-        function updateUI() {
-            document.getElementById("balance").textContent = `Balance: SOL ${balance}`;
-            document.getElementById("result").textContent = balance > 0 ? `You ${balance > 1 ?
-                "gained" : "lost"} SOL ${Math.abs(amount)}.` : "Game over!";
-        }
-
-        function disableGame() {
-            document.getElementById("bet").disabled = true;
-            document.getElementById("amount").disabled = true;
-            document.querySelector("button").disabled = true;
-        }
     });
 </script>
 </body>
